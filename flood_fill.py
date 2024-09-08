@@ -12,8 +12,7 @@ def get_random_color() -> tuple:
 
 def gaussian_color() -> tuple:
     random = np.random.normal(128, 100, 3)
-
-    return   (int(random[0]), int(random[1]), int(random[2]))
+    return  (int(random[0]), int(random[1]), int(random[2]))
 
 
 # Normal distribution
@@ -26,7 +25,6 @@ def get_random_coordinates( limits : int) -> list:
 def  mix_colors(color1 : tuple, color2 : tuple) -> tuple:
     final  = np.clip((np.array(color1) + np.array(color2)*0.24)//2 * 1.75, 0, 255).tolist()
     return (int(final[0]), int(final[1]), int(final[2]))
-
 
 
 
@@ -89,23 +87,24 @@ def fill_holes(image: Image , limits : int) -> Image:
 
                 image.putpixel((i, j), fill_color)
 
-limits = 500
-size = 5
-np.random.seed()
-im = Image.new('RGB', (limits, limits), (0, 0, 0))
 
-seeds = [(get_random_coordinates(limits=limits), gaussian_color()) for _ in range(size)]   
+if __name__ == "__main__":
+    limits = 500
+    size = 5
+    np.random.seed()
+    im = Image.new('RGB', (limits, limits), (0, 0, 0))
+
+    seeds = [(get_random_coordinates(limits=limits), gaussian_color()) for _ in range(size)]   
 
 
+    flood_fill(seeds, limits, im)
+    im.show()
 
-flood_fill(seeds, limits, im)
-im.show()
+    fill_holes(im, limits=limits)
 
-fill_holes(im, limits=limits)
+    im.show()
 
-im.show()
-
-im.save('image.png')
+    im.save('image.png')
 
 
 #print(get_random_coordinates(500))

@@ -43,6 +43,7 @@ def walker(tree, seed, image_size ):
         
         
     tree[x][y] = 1
+    tree[image_size-1 - x][y] = 1
 
 
 def diffusion_limited_agg(image_size: int, seed : tuple ,image: Image): 
@@ -50,7 +51,7 @@ def diffusion_limited_agg(image_size: int, seed : tuple ,image: Image):
     tree =  [[0 for i in range(image_size)] for j in range(image_size)]
     tree[seed[0]][seed[1]] = 1
     
-    for _ in tqdm(range(100000)):
+    for _ in tqdm(range(15000)):
         walker(tree, extreme_random_point(image_size=image_size), image_size)
     
     for i in range(image_size): 
@@ -59,7 +60,8 @@ def diffusion_limited_agg(image_size: int, seed : tuple ,image: Image):
             if tree[i][j] == 1:
                 for k in range(i-3, i+3):
                     for z in range(j-3, j+3):
-                        image.putpixel((k, z), (255, 255, 255))
+                        if not is_limit(k, z, image_size) :
+                            image.putpixel((k, z), (255, 255, 255))
     
 
 
@@ -73,4 +75,4 @@ if __name__ == "__main__":
     image = Image.new("RGB", (image_size, image_size), (0, 0, 0))
     seed = (image_size//2, image_size//2)
     diffusion_limited_agg(image_size, seed, image)
-    image.save("dla_1.png")
+    image.save("dla_2.png")
