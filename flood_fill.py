@@ -2,81 +2,111 @@ from  random import randint
 import PIL.Image as Image
 from tqdm import tqdm
 import numpy as np
+import cv2
+
+import poisson_disc as pd
 
 def get_random_color() -> tuple:
-    return (randint(150, 255), randint(150, 255), randint(150, 255))
+    return (int(np.random.uniform(100, 200)), int(np.random.uniform(100, 200)), int(np.random.uniform(100, 200)))
+
+
+def gaussian_color() -> tuple:
+    random = np.random.normal(128, 100, 3)
+
+    return   (int(random[0]), int(random[1]), int(random[2]))
+
 
 # Normal distribution
 def get_random_coordinates( limits : int) -> list:
     return  (
-        abs(int(np.random.normal(limits//2, limits//4,))),
-        abs(int(np.random.normal(limits//2, limits//4,)))
+        abs(int(np.random.uniform(0, limits))), abs(int(np.random.uniform(0, limits))) 
     )
 
 
-def get_random_seeds(size : int, limits : int) -> list:
-    return  [ [
-                get_random_coordinates(limits=limits) ,  get_random_color()
-              ] 
-                for _ in range(size)
-            ]
+def  mix_colors(color1 : tuple, color2 : tuple) -> tuple:
+    final  = np.clip((np.array(color1) + np.array(color2)*0.24)//2 * 1.75, 0, 255).tolist()
+    return (int(final[0]), int(final[1]), int(final[2]))
+
+
+
 
 
 def is_limit(x : int, y : int, limits : int) -> bool:
     return x < 0 or y < 0 or x >= limits or y >= limits
 
-def mixing_colors(color1 : tuple, color2 : tuple) -> tuple:
-    if color2 == (0, 0, 0):
-        return color1
 
-    return ((color1[0] + color2[0]) // 2, (color1[1] + color2[1]) // 2, (color1[2] + color2[2]) // 2)
-
-def flood_fill(seeds : list, limits : int, image : Image):
+move_map = [(0, 1),  (1, 0),  (1, 1), 
+            (0, -1), (-1, 0), (-1, -1), 
+            (1, -1), (-1, 1) ]
     
-    for [seed, color_seed] in tqdm(seeds):
-        stack = [[seed, color_seed,0]]
-        visited = [[0 for i in range(limits)] for j in range(limits)]            
-        while stack:
-            #print(len(stack))
-            pixel_info = stack.pop()
-            x, y = pixel_info[0]
-            color = pixel_info[1]       
-            step = pixel_info[2]     
-            if is_limit(x, y, limits) or  visited[x][y] == 1 or step > 200:
-                continue
-            new_color  =  mixing_colors(color , image.getpixel((x,y)))
+def flood_fill(seeds : list, limits : int, im : Image) -> None:
+    tree =  [[0 for i in range(limits)] for j in range(limits)]
             
-            image.putpixel((x, y), new_color)
-            new_color = (int(new_color[0] ), int(new_color[1] ), int(new_color[2] ))
+    queue = [(x, y,0, color) for (x,y), color in seeds]
+    while queue:
+
+        x, y, step, color = queue.pop(0)
+        tree[x][y] = 1
+        im.putpixel((x, y), color)
             
-            visited[x][y] = 1
-
-
-            # move randomly   
-            #
-
-            stack.append([[x+1, y], new_color, step+randint(1,3)])
-            stack.append([[x-1, y], new_color, step+randint(1,3)])
-            stack.append([[x, y+1], new_color, step+randint(1,3)])
-            stack.append([[x, y-1], new_color, step+randint(1,3)])
             
+        moves = [move_map[randint(0,7)] for i in range(4)]
+
+        for dx, dy in moves:
+            if not is_limit(x+ dx, y +dy, limits)  and tree[x+dx][y+dy] == 0:
+                
+                tree[x+dx][y+dy] = 1
+
+                if step % 20 == 0: 
+                    
+                    ncolor = gaussian_color()
+                    queue.append((x+dx, y+dy,step+1, mix_colors(color, ncolor )))
+
+                else: 
+                    queue.append((x+dx, y+dy,step+1, color))
             
 
 
+            
 
 
 
+def fill_holes(image: Image , limits : int) -> Image:
+    for i in range(limits):
+        for j in range(limits):
+            if image.getpixel((i, j)) == (0, 0, 0):
+                fill_color = (150, 10, 30)
+                
+                
+                for k in range(i-4, i+4):
+                    for z in range(j-4, j+4):
+                        if not is_limit(k, z, limits)  and k != i and z != j:
+                            pixel_color = image.getpixel((k, z))
+                            fill_color = (fill_color[0] + pixel_color[0], fill_color[1] + pixel_color[1], fill_color[2] + pixel_color[2])
 
+
+                fill_color = (fill_color[0]// 49, fill_color[1]// 49, fill_color[2]// 49)
+
+                image.putpixel((i, j), fill_color)
 
 limits = 500
-size = 100
-
+size = 5
+np.random.seed()
 im = Image.new('RGB', (limits, limits), (0, 0, 0))
 
-seeds = get_random_seeds(size, limits)
+seeds = [(get_random_coordinates(limits=limits), gaussian_color()) for _ in range(size)]   
+
+
+
 flood_fill(seeds, limits, im)
+im.show()
 
+fill_holes(im, limits=limits)
 
-
+im.show()
 
 im.save('image.png')
+
+
+#print(get_random_coordinates(500))
+
