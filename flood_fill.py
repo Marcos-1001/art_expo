@@ -4,21 +4,21 @@ from tqdm import tqdm
 import numpy as np
 import cv2
 
-import poisson_disc as pd
 
 def get_random_color() -> tuple:
     return (int(np.random.uniform(100, 200)), int(np.random.uniform(100, 200)), int(np.random.uniform(100, 200)))
 
 
-def gaussian_color() -> tuple:
-    random = np.random.normal(128, 100, 3)
-    return  (int(random[0]), int(random[1]), int(random[2]))
+def gaussian_color(distr = (1,1,1)) -> tuple:
+    random = np.random.normal(128, 80, 3)
+    
+    return  (int(random[0]*distr[0]), int(random[1]*distr[1]), int(random[2]*distr[2]))
 
 
 # Normal distribution
 def get_random_coordinates( limits : int) -> list:
     return  (
-        abs(int(np.random.uniform(0, limits))), abs(int(np.random.uniform(0, limits))) 
+        abs(int(np.random.uniform(0, limits-1))), abs(int(np.random.uniform(0, limits-1))) 
     )
 
 
@@ -37,6 +37,8 @@ move_map = [(0, 1),  (1, 0),  (1, 1),
             (0, -1), (-1, 0), (-1, -1), 
             (1, -1), (-1, 1) ]
     
+    
+
 def flood_fill(seeds : list, limits : int, im : Image) -> None:
     tree =  [[0 for i in range(limits)] for j in range(limits)]
             
@@ -47,19 +49,21 @@ def flood_fill(seeds : list, limits : int, im : Image) -> None:
         tree[x][y] = 1
         im.putpixel((x, y), color)
             
-            
-        moves = [move_map[randint(0,7)] for i in range(4)]
+        # Random walk - choose 4 random directions
+        moves = [move_map[randint(0,39)% 8] for i in range(4)]
 
         for dx, dy in moves:
             if not is_limit(x+ dx, y +dy, limits)  and tree[x+dx][y+dy] == 0:
                 
                 tree[x+dx][y+dy] = 1
 
-                if step % 20 == 0: 
+                if step >= 100 and step % 20 == 0: 
                     
-                    ncolor = gaussian_color()
+                    ncolor = gaussian_color((.1, .75, .05))
                     queue.append((x+dx, y+dy,step+1, mix_colors(color, ncolor )))
-
+                elif step < 100 and step % 10 == 0: 
+                    ncolor = gaussian_color((.9, .9, .05))
+                    queue.append((x+dx, y+dy,step+1, mix_colors(color, ncolor )))
                 else: 
                     queue.append((x+dx, y+dy,step+1, color))
             
@@ -68,7 +72,7 @@ def flood_fill(seeds : list, limits : int, im : Image) -> None:
             
 
 
-
+# This functions fills the pixel holes where the random walk did not reach
 def fill_holes(image: Image , limits : int) -> Image:
     for i in range(limits):
         for j in range(limits):
@@ -89,20 +93,20 @@ def fill_holes(image: Image , limits : int) -> Image:
 
 
 if __name__ == "__main__":
-    limits = 500
-    size = 5
+    limits = 1000
+    size = 2
     np.random.seed()
     im = Image.new('RGB', (limits, limits), (0, 0, 0))
 
-    seeds = [(get_random_coordinates(limits=limits), gaussian_color()) for _ in range(size)]   
-
+    #seeds = [(get_random_coordinates(limits=limits), gaussian_color()) for _ in range(size)]   
+    seeds = [((200, 800), (255,255,0))]
 
     flood_fill(seeds, limits, im)
-    im.show()
+    #im.show()
 
     fill_holes(im, limits=limits)
 
-    im.show()
+    #im.show()
 
     im.save('image.png')
 

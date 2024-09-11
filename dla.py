@@ -50,8 +50,8 @@ def diffusion_limited_agg(image_size: int, seed : tuple ,image: Image):
     
     tree =  [[0 for i in range(image_size)] for j in range(image_size)]
     tree[seed[0]][seed[1]] = 1
-    
-    for _ in tqdm(range(15000)):
+    # 12380
+    for _ in tqdm(range(8000)):
         walker(tree, extreme_random_point(image_size=image_size), image_size)
     
     for i in range(image_size): 
@@ -105,11 +105,11 @@ def gradient_color(image,tree, seed, color) -> tuple:
 
 if __name__ == "__main__":
     image_size = 1000 
-    #image = Image.new("RGB", (image_size, image_size), (0, 0, 0))
+    image = Image.new("RGB", (image_size, image_size), (0, 0, 0))
     seed = (image_size//2, image_size//2)
     
-    image = Image.open("dla_3.png")
-    tree = map_image_to_tree(image=image)
-    #tree = diffusion_limited_agg(image_size, seed, image)
-    gradient_color(image, tree, seed, (100, 100, 100))
+    #image = Image.open("dla_3.png")
+    #tree = map_image_to_tree(image=image)
+    tree = diffusion_limited_agg(image_size, seed, image)
+    #gradient_color(image, tree, seed, (100, 100, 100))
     image.save("dla_4.png")
