@@ -57,12 +57,12 @@ def flood_fill(seeds : list, limits : int, im : Image) -> None:
                 
                 tree[x+dx][y+dy] = 1
 
-                if step >= 100 and step % 20 == 0: 
+                if step >= 200 and step % 50 == 0: 
                     
-                    ncolor = gaussian_color((.1, .75, .05))
+                    ncolor = gaussian_color((.99, .99, .99))
                     queue.append((x+dx, y+dy,step+1, mix_colors(color, ncolor )))
-                elif step < 100 and step % 10 == 0: 
-                    ncolor = gaussian_color((.9, .9, .05))
+                elif step < 200 and step % 40 == 0: 
+                    ncolor = gaussian_color((.9, .9, .9))
                     queue.append((x+dx, y+dy,step+1, mix_colors(color, ncolor )))
                 else: 
                     queue.append((x+dx, y+dy,step+1, color))
@@ -93,13 +93,13 @@ def fill_holes(image: Image , limits : int) -> Image:
 
 
 if __name__ == "__main__":
-    limits = 1000
-    size = 2
+    limits = 1500
+    size = 1
     np.random.seed()
     im = Image.new('RGB', (limits, limits), (0, 0, 0))
 
-    #seeds = [(get_random_coordinates(limits=limits), gaussian_color()) for _ in range(size)]   
-    seeds = [((200, 800), (255,255,0))]
+    seeds = [(get_random_coordinates(limits=limits), gaussian_color()) for _ in range(size)]   
+    #seeds = [((300, 1200), (255,255,0))]
 
     flood_fill(seeds, limits, im)
     #im.show()
@@ -108,7 +108,7 @@ if __name__ == "__main__":
 
     #im.show()
 
-    im.save('image.png')
+    im.save('image_2.png', dpi = (600, 600))
 
 
 #print(get_random_coordinates(500))

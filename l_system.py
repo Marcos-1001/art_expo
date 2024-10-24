@@ -26,14 +26,14 @@ def draw_l_system(image: Image,
     stack = []
     draw = ImageDraw.Draw(image)
     init_angle = 270
-    
+    length += 5
     #print(axiom)
     for c in axiom:
         if c == "F" or c == "X":
 
             x1 = x + length * np.cos(np.radians(init_angle))
             y1 = y + length * np.sin(np.radians(init_angle))
-            draw.line((x, y, x1, y1), fill="black")
+            draw.line((x, y, x1, y1), width=4 ,fill="black", joint="curve")
             x, y = x1, y1
 
 
@@ -96,15 +96,15 @@ if __name__ == '__main__':
                "F[-F]F",],
     }
 
-    draw_l_system(image, l_system("X", rules_2, iterations), seed=(300, 1000), length=5, angle=22.5)
-    draw_l_system(image, l_system("X", rules, 4), seed=(750, 1000), length=10, angle=25)
-    draw_l_system(image, l_system("F", rules_3, 5), seed=(500, 1000), length=3, angle=18)
+    #draw_l_system(image, l_system("X", rules_2, iterations), seed=(500, 1000), length=8, angle=22.5)
+    draw_l_system(image, l_system("X", rules, 4), seed=(500, 1000), length=15, angle=30.5)
+    #draw_l_system(image, l_system("F", rules_3, 5), seed=(600, 1000), length=3, angle=18)
     #draw_l_system(image, l_system("F", rules_3, 5), seed=(560, 1000),       =3, angle=18)
-    draw_l_system(image, l_system("F", rules_3, 5), seed=(440, 1000), length=3, angle=18)
-    draw_l_system(image, l_system("F", rules_1, 4), seed=(620, 1000), length=10, angle=18)
-    image.show()
+    #draw_l_system(image, l_system("F", rules_3, 5), seed=(350, 1000), length=3, angle=18)
+    #draw_l_system(image, l_system("F", rules_1, 4), seed=(550, 1000), length=12, angle=24)
+    #image.show()
     # Erase the background 
-    image.save("l_system.png")
+    image.save("l_system_4.png", dpi = (600, 600))
     
     
     
